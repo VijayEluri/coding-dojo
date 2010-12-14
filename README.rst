@@ -81,3 +81,10 @@ Rules:
   - It sometimes rests.
 
   - If you are near the wumpus you will "smell the wumpus".
+
+
+License
+-------
+
+This project is licensed under the Apache License, Version 2.0. See the file
+LICENSE for details.
