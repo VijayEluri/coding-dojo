@@ -86,4 +86,12 @@ public class InteractiveGameTest {
 		assertFalse(game.running);
 		assertEquals("Bye!", response);
 	}
+
+	@Test
+	public void restRestsForATick() throws Exception {
+		Game game = new Game();
+		String response = game.process("R");
+		assertEquals(1, game.turn);
+		assertEquals("Zzz ...", response);
+	}
 }

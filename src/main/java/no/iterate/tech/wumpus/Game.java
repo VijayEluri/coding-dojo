@@ -227,6 +227,10 @@ public class Game {
 		if (command.equals("S")) {
 			return goSouth() ? "Moving south" : "You can't go south from here";
 		}
+		if (command.equals("R")) {
+			rest();
+			return "Zzz ...";
+		}
 		if (command.equals("P")) {
 			return printMaze();
 		}
