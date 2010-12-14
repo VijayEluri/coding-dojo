@@ -184,10 +184,12 @@ public class Game {
 	}
 
 	private void run() {
+		System.out.println("Welcome to Hunting the Wumpus! Play!");
 		while (running) {
+			System.out.print("> ");
 			Scanner scanner = new Scanner(System.in);
 			String command = scanner.nextLine();
-			System.out.println(process(command));
+			System.out.println(process(command).trim());
 		}
 	}
 
