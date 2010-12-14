@@ -1,6 +1,8 @@
 package no.iterate.tech.wumpus;
 
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Game {
@@ -14,6 +16,7 @@ public class Game {
 	Point arrowPosition = null;
 	int turn;
 	boolean running = true;
+	List<String> messages = new ArrayList<String>();
 
 	public Game(int x, int y) {
 		maze = new SquareType[x][y];
@@ -121,8 +124,10 @@ public class Game {
 	}
 
 	private void dieIfArrowBouncedBackAtPlayer() {
-		if (arrowPosition.equals(playerPosition))
+		if (arrowPosition.equals(playerPosition)) {
 			alive = false;
+			messages.add("Arrow bounced on wall. You die!");
+		}
 	}
 
 	public void createWall(int x, int y) {
@@ -185,11 +190,14 @@ public class Game {
 
 	private void run() {
 		System.out.println("Welcome to Hunting the Wumpus! Play!");
-		while (running) {
+		while (running && alive) {
 			System.out.print("> ");
 			Scanner scanner = new Scanner(System.in);
 			String command = scanner.nextLine();
 			System.out.println(process(command).trim());
+			while (!messages.isEmpty()) {
+				System.out.println(messages.remove(0));
+			}
 		}
 	}
 

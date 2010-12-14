@@ -1,6 +1,6 @@
 package no.iterate.tech.wumpus;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.awt.Point;
 
@@ -46,6 +46,15 @@ public class InteractiveShootingTest {
 		String response = game.process("SS");
 		assertEquals("Shooting south!", response);
 		assertEquals(new Point(1, 2), game.arrowPosition);
+	}
+	
+	@Test
+	public void diesWhenShootingIntoWallNextToPlayer() throws Exception {
+		Game game = new Game(3, 3);
+		String response = game.process("SW");
+		assertEquals("Shooting west!", response);
+		assertTrue(game.over());
+		assertTrue(game.messages.contains("Arrow bounced on wall. You die!"));
 	}
 
 }
