@@ -1,6 +1,7 @@
 package no.iterate.tech.wumpus;
 
 import java.awt.Point;
+import java.util.Scanner;
 
 public class Game {
 	enum SquareType {
@@ -12,6 +13,7 @@ public class Game {
 	Point playerPosition = new Point(0, 0);
 	Point arrowPosition = null;
 	int turn;
+	boolean running = true;
 
 	public Game(int x, int y) {
 		maze = new SquareType[x][y];
@@ -177,6 +179,19 @@ public class Game {
 	}
 
 	public static void main(String[] args) {
+		Game game = createNewGameWithAMaze();
+		game.run();
+	}
+
+	private void run() {
+		while (running) {
+			Scanner scanner = new Scanner(System.in);
+			String command = scanner.nextLine();
+			System.out.println(process(command));
+		}
+	}
+
+	private static Game createNewGameWithAMaze() {
 		Game game = new Game(10, 10);
 		game.createWall(0, 1);
 		game.createWall(0, 2);
@@ -196,7 +211,7 @@ public class Game {
 		game.createWall(4, 5);
 		game.createWall(4, 6);
 		game.createPit(1, 4);
-		System.out.println(game.printMaze());
+		return game;
 	}
 
 	public String process(String command) {
@@ -212,9 +227,15 @@ public class Game {
 		if (command.equals("S")) {
 			return goSouth() ? "Moving south" : "You can't go south from here";
 		}
+		if (command.equals("P")) {
+			return printMaze();
+		}
+		if (command.equals("Q")) {
+			running = false;
+			return "Bye!";
+		}
 
 		return "Can't understand you. Try ([S]{E,W,N,S}|R|P|Q) ;-)";
-
 	}
 
 }

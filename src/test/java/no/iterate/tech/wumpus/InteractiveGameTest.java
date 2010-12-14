@@ -19,14 +19,14 @@ public class InteractiveGameTest {
 		String response = game.process("S");
 		assertEquals("You can't go south from here", response);
 	}
-	
+
 	@Test
 	public void cannotGoWestIfWallInWest() throws Exception {
 		Game game = new Game();
 		String response = game.process("W");
 		assertEquals("You can't go west from here", response);
 	}
-	
+
 	@Test
 	public void cannotGoNorthIfWallInNorth() throws Exception {
 		Game game = new Game();
@@ -72,4 +72,18 @@ public class InteractiveGameTest {
 				response);
 	}
 
+	@Test
+	public void printMaze() throws Exception {
+		Game game = new Game();
+		String response = game.process("P");
+		assertEquals("###\n#@#\n###\n", response);
+	}
+
+	@Test
+	public void quitQuits() throws Exception {
+		Game game = new Game();
+		String response = game.process("Q");
+		assertFalse(game.running);
+		assertEquals("Bye!", response);
+	}
 }
