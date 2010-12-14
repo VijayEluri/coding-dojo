@@ -52,6 +52,7 @@ public class Game {
 			playerPosition.x += dx;
 			playerPosition.y += dy;
 			pickUpArrowIfInSameSquareAsPlayer();
+			listenForWind();
 			turn++;
 			return true;
 		default:
@@ -63,6 +64,44 @@ public class Game {
 		if (playerPosition.equals(arrowPosition)) {
 			arrowPosition = null;
 			messages.add("You picked up the arrow");
+		}
+	}
+
+	private void listenForWind() {
+		if (pitInEast() || pitInWest() || pitInNorth() || pitInSouth()) {
+			messages.add("You hear wind");
+		}
+	}
+	
+	private boolean pitInEast() {
+		try {
+			return maze[playerPosition.x + 1][playerPosition.y] == SquareType.PIT;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return false;
+		}
+	}
+	
+	private boolean pitInWest() {
+		try {
+			return maze[playerPosition.x - 1][playerPosition.y] == SquareType.PIT;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return false;
+		}
+	}
+	
+	private boolean pitInNorth() {
+		try {
+			return maze[playerPosition.x][playerPosition.y - 1] == SquareType.PIT;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return false;
+		}
+	}
+	
+	private boolean pitInSouth() {
+		try {
+			return maze[playerPosition.x][playerPosition.y + 1] == SquareType.PIT;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return false;
 		}
 	}
 
@@ -173,7 +212,8 @@ public class Game {
 				case PATH:
 					if (playerPosition.x == i && playerPosition.y == j) {
 						sb.append("@");
-					} else if (!playerHasArrow() && arrowPosition.x == i && arrowPosition.y == j) {
+					} else if (!playerHasArrow() && arrowPosition.x == i
+							&& arrowPosition.y == j) {
 						sb.append("+");
 					} else {
 						sb.append(" ");
@@ -234,6 +274,7 @@ public class Game {
 		game.createWall(4, 5);
 		game.createWall(4, 6);
 		game.createPit(1, 4);
+		game.createPit(7, 5);
 		return game;
 	}
 
@@ -258,10 +299,12 @@ public class Game {
 			return shootWest() ? "Shooting west!" : "You don't have the arrow!";
 		}
 		if (command.equals("SN")) {
-			return shootNorth() ? "Shooting north!" : "You don't have the arrow!";
+			return shootNorth() ? "Shooting north!"
+					: "You don't have the arrow!";
 		}
 		if (command.equals("SS")) {
-			return shootSouth() ? "Shooting south!" : "You don't have the arrow!";
+			return shootSouth() ? "Shooting south!"
+					: "You don't have the arrow!";
 		}
 
 		if (command.equals("R")) {
@@ -269,7 +312,8 @@ public class Game {
 			return "Zzz ...";
 		}
 		if (command.equals("P")) {
-			return getTurnDisplay() + ",  " + getInventoryDisplay() + "\n" + printMaze();
+			return getTurnDisplay() + ",  " + getInventoryDisplay() + "\n"
+					+ printMaze();
 		}
 		if (command.equals("Q")) {
 			running = false;

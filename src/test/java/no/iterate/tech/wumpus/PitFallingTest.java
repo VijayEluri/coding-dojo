@@ -1,7 +1,6 @@
 package no.iterate.tech.wumpus;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.awt.Point;
 
@@ -28,6 +27,40 @@ public class PitFallingTest {
 		assertTrue(game.messages.contains("You fell in a pit, game over ^^"));
 	}
 	
+	@Test
+	public void playerHearsWindWhenPitInTheEast() throws Exception {
+		Game game = new Game(3, 1, new Point(0, 0));
+		game.createPit(2, 0);
+		assertTrue(game.messages.isEmpty());
+		game.goEast();
+		assertTrue(game.messages.contains("You hear wind"));
+	}
 	
+	@Test
+	public void playerHearsWindWhenPitInTheWest() throws Exception {
+		Game game = new Game(3, 1, new Point(2, 0));
+		game.createPit(0, 0);
+		assertTrue(game.messages.isEmpty());
+		game.goWest();
+		assertTrue(game.messages.contains("You hear wind"));
+	}
+	
+	@Test
+	public void playerHearsWindWhenPitInTheNorth() throws Exception {
+		Game game = new Game(1, 3, new Point(0, 2));
+		game.createPit(0, 0);
+		assertTrue(game.messages.isEmpty());
+		game.goNorth();
+		assertTrue(game.messages.contains("You hear wind"));
+	}
+	
+	@Test
+	public void playerHearsWindWhenPitInTheSouth() throws Exception {
+		Game game = new Game(1, 3, new Point(0, 0));
+		game.createPit(0, 2);
+		assertTrue(game.messages.isEmpty());
+		game.goSouth();
+		assertTrue(game.messages.contains("You hear wind"));
+	}
 
 }
