@@ -62,6 +62,7 @@ public class Game {
 	private void pickUpArrowIfInSameSquareAsPlayer() {
 		if (playerPosition.equals(arrowPosition)) {
 			arrowPosition = null;
+			messages.add("You picked up the arrow");
 		}
 	}
 

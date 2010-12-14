@@ -37,6 +37,7 @@ public class ArrowShootingTest {
 		assertFalse(game.playerHasArrow());
 		game.goEast();
 		assertTrue(game.playerHasArrow());
+		assertTrue(game.messages.contains("You picked up the arrow"));
 	}
 
 	@Test
@@ -86,5 +87,6 @@ public class ArrowShootingTest {
 		assertFalse(game.shootEast());
 		
 	}
+	
 
 }
