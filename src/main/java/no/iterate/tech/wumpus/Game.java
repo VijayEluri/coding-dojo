@@ -232,7 +232,7 @@ public class Game {
 			return "Zzz ...";
 		}
 		if (command.equals("P")) {
-			return printMaze();
+			return "Turn: " + turn + "\n" + printMaze();
 		}
 		if (command.equals("Q")) {
 			running = false;

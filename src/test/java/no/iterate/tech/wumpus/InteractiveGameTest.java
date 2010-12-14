@@ -73,10 +73,10 @@ public class InteractiveGameTest {
 	}
 
 	@Test
-	public void printMaze() throws Exception {
+	public void printTurnNumberAndMaze() throws Exception {
 		Game game = new Game();
 		String response = game.process("P");
-		assertEquals("###\n#@#\n###\n", response);
+		assertEquals("Turn: 0\n###\n#@#\n###\n", response);
 	}
 
 	@Test
