@@ -59,10 +59,18 @@ public class Game {
 			pickUpArrowIfInSameSquareAsPlayer();
 			listenForWind();
 			smellForWumpus();
+			beKilledByWumpusIfInSameSquare();
 			turn++;
 			return true;
 		default:
 			return false;
+		}
+	}
+
+	private void beKilledByWumpusIfInSameSquare() {
+		if (playerPosition.equals(wumpusPosition)) {
+			messages.add("You walked into the Wumpus. It kills you!");
+			alive = false;
 		}
 	}
 
@@ -327,7 +335,7 @@ public class Game {
 		game.createWall(4, 6);
 		game.createPit(1, 4);
 		game.createPit(7, 5);
-		game.addWumpus(new Point(9, 9));
+		game.addWumpus(new Point(6, 3));
 		return game;
 	}
 
@@ -389,6 +397,13 @@ public class Game {
 	}
 
 	public void addWumpus(Point wumpusPosition) {
+		try {
+			if (maze[wumpusPosition.x][wumpusPosition.y] != SquareType.PATH) {
+				throw new IllegalStateException("Square is not a path");
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new IllegalStateException("Wumpus is outside the maze", e);
+		}
 		this.wumpusPosition = wumpusPosition;
 	}
 

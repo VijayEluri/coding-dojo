@@ -15,6 +15,19 @@ public class WumpusTest {
 		assertEquals(new Point(2, 2), game.wumpusPosition);
 	}
 
+	@Test(expected = IllegalStateException.class)
+	public void wumpusCanOnlyBeAddedToPaths() throws Exception {
+		Game game = new Game(3, 3);
+		game.createPit(2, 2);
+		game.addWumpus(new Point(2, 2));
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void wumpusCanOnlyBeAddedInsideMaze() throws Exception {
+		Game game = new Game(3, 3);
+		game.addWumpus(new Point(3, 3));
+	}
+
 	@Test
 	public void wumpusDiesWhenArrowIsShotAtIt() throws Exception {
 		Game game = new Game(3, 1);
@@ -57,6 +70,17 @@ public class WumpusTest {
 		assertTrue(game.messages.isEmpty());
 		game.goSouth();
 		assertTrue(game.messages.contains("You smell the Wumpus"));
+	}
+
+	@Test
+	public void playerDiesWhenWalkingIntoWumpus() throws Exception {
+		Game game = new Game(2, 1);
+		game.addWumpus(new Point(1, 0));
+		assertTrue(game.messages.isEmpty());
+		game.goEast();
+		assertTrue(game.messages
+				.contains("You walked into the Wumpus. It kills you!"));
+		assertTrue(game.over());
 	}
 
 }
