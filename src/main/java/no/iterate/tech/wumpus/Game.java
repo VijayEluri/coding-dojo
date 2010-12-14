@@ -267,7 +267,7 @@ public class Game {
 			return "Zzz ...";
 		}
 		if (command.equals("P")) {
-			return "Turn: " + turn + "\n" + printMaze();
+			return getTurnDisplay() + ",  " + getInventoryDisplay() + "\n" + printMaze();
 		}
 		if (command.equals("Q")) {
 			running = false;
@@ -275,6 +275,18 @@ public class Game {
 		}
 
 		return "Can't understand you. Try ([S]{E,W,N,S}|R|P|Q) ;-)";
+	}
+
+	private String getInventoryDisplay() {
+		if (playerHasArrow()) {
+			return "Inventory: +";
+		} else {
+			return "Inventory: empty";
+		}
+	}
+
+	private String getTurnDisplay() {
+		return "Turn: " + turn;
 	}
 
 }

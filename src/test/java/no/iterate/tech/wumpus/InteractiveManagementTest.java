@@ -8,10 +8,25 @@ import org.junit.Test;
 public class InteractiveManagementTest {
 
 	@Test
-	public void printTurnNumberAndMaze() throws Exception {
+	public void printTurnNumberAndInventoryAndMaze() throws Exception {
 		Game game = new Game();
 		String response = game.process("P");
-		assertEquals("Turn: 0\n###\n#@#\n###\n", response);
+		String[] lines = response.split("\n");
+		assertEquals(4, lines.length);
+		assertEquals("Turn: 0,  Inventory: +", lines[0]);
+		assertEquals("###", lines[1]);
+		assertEquals("#@#", lines[2]);
+		assertEquals("###", lines[3]);
+	}
+	
+	@Test
+	public void printTurnNumberAndEmptyInventory() throws Exception {
+		Game game = new Game(2, 1);
+		game.shootEast();
+		String response = game.process("P");
+		String[] lines = response.split("\n");
+		assertEquals(4, lines.length);
+		assertEquals("Turn: 1,  Inventory: empty", lines[0]);
 	}
 
 	@Test
