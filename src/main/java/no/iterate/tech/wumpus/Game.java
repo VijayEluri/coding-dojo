@@ -1,10 +1,12 @@
 package no.iterate.tech.wumpus;
+
 import java.awt.Point;
 
 public class Game {
 	enum SquareType {
 		PATH, WALL, PIT, BAT
 	};
+
 	boolean alive = true;
 	SquareType[][] maze;
 	Point playerPosition = new Point(0, 0);
@@ -195,6 +197,24 @@ public class Game {
 		game.createWall(4, 6);
 		game.createPit(1, 4);
 		System.out.println(game.printMaze());
+	}
+
+	public String process(String command) {
+		if (command.equals("E")) {
+			return goEast() ? "Moving east" : "You can't go east from here";
+		}
+		if (command.equals("W")) {
+			return goWest() ? "Moving west" : "You can't go west from here";
+		}
+		if (command.equals("N")) {
+			return goNorth() ? "Moving north" : "You can't go north from here";
+		}
+		if (command.equals("S")) {
+			return goSouth() ? "Moving south" : "You can't go south from here";
+		}
+
+		return "Can't understand you. Try ([S]{E,W,N,S}|R|P|Q) ;-)";
+
 	}
 
 }
