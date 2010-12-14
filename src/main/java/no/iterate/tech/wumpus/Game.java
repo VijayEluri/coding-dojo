@@ -58,6 +58,7 @@ public class Game {
 			playerPosition.y += dy;
 			pickUpArrowIfInSameSquareAsPlayer();
 			listenForWind();
+			smellForWumpus();
 			turn++;
 			return true;
 		default:
@@ -70,6 +71,33 @@ public class Game {
 			arrowPosition = null;
 			messages.add("You picked up the arrow");
 		}
+	}
+
+	private void smellForWumpus() {
+		if (wumpusInEast() || wumpusInWest() || wumpusInNorth()
+				|| wumpusInSouth()) {
+			messages.add("You smell the Wumpus");
+		}
+	}
+
+	private boolean wumpusInSouth() {
+		Point checkForWumpus = new Point(playerPosition.x, playerPosition.y + 1);
+		return checkForWumpus.equals(wumpusPosition);
+	}
+
+	private boolean wumpusInNorth() {
+		Point checkForWumpus = new Point(playerPosition.x, playerPosition.y - 1);
+		return checkForWumpus.equals(wumpusPosition);
+	}
+
+	private boolean wumpusInWest() {
+		Point checkForWumpus = new Point(playerPosition.x - 1, playerPosition.y);
+		return checkForWumpus.equals(wumpusPosition);
+	}
+
+	private boolean wumpusInEast() {
+		Point checkForWumpus = new Point(playerPosition.x + 1, playerPosition.y);
+		return checkForWumpus.equals(wumpusPosition);
 	}
 
 	private void listenForWind() {
