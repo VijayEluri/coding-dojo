@@ -3,6 +3,7 @@ package no.iterate.tech.wumpus;
 import static org.junit.Assert.*;
 
 import java.awt.Point;
+import java.util.Random;
 
 import org.junit.Test;
 
@@ -81,6 +82,31 @@ public class WumpusTest {
 		assertTrue(game.messages
 				.contains("You walked into the Wumpus. It kills you!"));
 		assertTrue(game.over());
+	}
+
+	@Test
+	public void moveWumpusInRandomDirectionEachTurn() throws Exception {
+		Game game = new Game(3, 3);
+		game.addWumpus(new Point(2, 2));
+		game.random = new Random(0);
+
+		game.tick();
+		assertEquals(new Point(2, 1), game.wumpusPosition);
+
+		game.tick();
+		assertEquals(new Point(2, 2), game.wumpusPosition);
+
+		game.tick();
+		assertEquals(new Point(2, 2), game.wumpusPosition);
+
+		game.tick();
+		assertEquals(new Point(2, 1), game.wumpusPosition);
+
+		game.tick();
+		assertEquals(new Point(2, 0), game.wumpusPosition);
+
+		game.tick();
+		assertEquals(new Point(1, 0), game.wumpusPosition);
 	}
 
 }

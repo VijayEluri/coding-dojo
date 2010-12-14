@@ -3,6 +3,7 @@ package no.iterate.tech.wumpus;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Game {
@@ -22,6 +23,8 @@ public class Game {
 	Point arrowPosition = null;
 
 	List<String> messages = new ArrayList<String>();
+
+	Random random = new Random();
 
 	public Game() {
 		this(1, 1);
@@ -60,7 +63,7 @@ public class Game {
 			listenForWind();
 			smellForWumpus();
 			beKilledByWumpusIfInSameSquare();
-			turn++;
+			tick();
 			return true;
 		default:
 			return false;
@@ -187,8 +190,8 @@ public class Game {
 			return false;
 		}
 		arrowPosition = (Point) playerPosition.clone();
-		turn++;
 		flyingArrow(x, y);
+		tick();
 		return true;
 	}
 
@@ -240,7 +243,7 @@ public class Game {
 	}
 
 	public void rest() {
-		turn++;
+		tick();
 	}
 
 	public boolean playerHasArrow() {
@@ -405,6 +408,79 @@ public class Game {
 			throw new IllegalStateException("Wumpus is outside the maze", e);
 		}
 		this.wumpusPosition = wumpusPosition;
+	}
+
+	public void tick() {
+		turn++;
+		moveWumpus();
+	}
+
+	private void moveWumpus() {
+		if (wumpusPosition == null) {
+			return;
+		}
+		int direction = random.nextInt(4);
+		switch (direction) {
+		case 0:
+			moveWumpusEast();
+			break;
+		case 1:
+			moveWumpusWest();
+			break;
+		case 2:
+			moveWumpusNorth();
+			break;
+		case 3:
+			moveWumpusSouth();
+			break;
+		default:
+			throw new RuntimeException("This is not possible!");
+		}
+
+	}
+
+	private boolean moveWumpusSouth() {
+		try {
+			if (maze[wumpusPosition.x][wumpusPosition.y + 1] == SquareType.PATH) {
+				wumpusPosition.y++;
+				return true;
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+		}
+		return false;
+	}
+
+	private boolean moveWumpusNorth() {
+		try {
+			if (maze[wumpusPosition.x][wumpusPosition.y - 1] == SquareType.PATH) {
+				wumpusPosition.y--;
+				return true;
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+		}
+		return false;
+	}
+
+	private boolean moveWumpusWest() {
+		try {
+			if (maze[wumpusPosition.x - 1][wumpusPosition.y] == SquareType.PATH) {
+				wumpusPosition.x--;
+				return true;
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+		}
+		return false;
+	}
+
+	private boolean moveWumpusEast() {
+		try {
+			if (maze[wumpusPosition.x + 1][wumpusPosition.y] == SquareType.PATH) {
+				wumpusPosition.x++;
+				return true;
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+		}
+		return false;
 	}
 
 }
