@@ -170,12 +170,22 @@ public class Game {
 		case PATH:
 			arrowPosition.x += dx;
 			arrowPosition.y += dy;
-			return flyingArrow(dx, dy);
+			return !arrowHitWumpus() && flyingArrow(dx, dy);
 		default:
 			dieIfArrowBouncedBackAtPlayer();
 			return false;
 		}
 
+	}
+
+	private boolean arrowHitWumpus() {
+		if (arrowPosition.equals(wumpusPosition)) {
+			messages.add("You shot the Wumpus! You WIN!");
+			running = false;
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	private void dieIfArrowBouncedBackAtPlayer() {
