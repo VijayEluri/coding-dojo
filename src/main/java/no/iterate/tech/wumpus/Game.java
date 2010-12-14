@@ -12,23 +12,28 @@ public class Game {
 
 	boolean alive = true;
 	SquareType[][] maze;
-	Point playerPosition = new Point(0, 0);
+	Point playerPosition;
 	Point arrowPosition = null;
 	int turn;
 	boolean running = true;
 	List<String> messages = new ArrayList<String>();
 
+	public Game() {
+		this(1, 1);
+	}
+
 	public Game(int x, int y) {
+		this(x, y, new Point(0, 0));
+	}
+
+	public Game(int x, int y, Point playerPosition) {
 		maze = new SquareType[x][y];
 		for (int i = 0; i < x; i++) {
 			for (int j = 0; j < y; j++) {
 				maze[i][j] = SquareType.PATH;
 			}
 		}
-	}
-
-	public Game() {
-		this(1, 1);
+		this.playerPosition = playerPosition;
 	}
 
 	public boolean go(int dx, int dy) {
@@ -79,26 +84,30 @@ public class Game {
 		return !alive;
 	}
 
-	public void shootNorth() {
-		shoot(0, -1);
+	public boolean shootNorth() {
+		return shoot(0, -1);
 	}
 
-	public void shootSouth() {
-		shoot(0, 1);
+	public boolean shootSouth() {
+		return shoot(0, 1);
 	}
 
-	public void shootWest() {
-		shoot(-1, 0);
+	public boolean shootWest() {
+		return shoot(-1, 0);
 	}
 
-	public void shootEast() {
-		shoot(1, 0);
+	public boolean shootEast() {
+		return shoot(1, 0);
 	}
 
-	private void shoot(int x, int y) {
+	private boolean shoot(int x, int y) {
+		if (!playerHasArrow()) {
+			return false;
+		}
 		arrowPosition = (Point) playerPosition.clone();
 		turn++;
 		flyingArrow(x, y);
+		return true;
 	}
 
 	private boolean flyingArrow(int dx, int dy) {
@@ -237,24 +246,20 @@ public class Game {
 		if (command.equals("S")) {
 			return goSouth() ? "Moving south" : "You can't go south from here";
 		}
-		
+
 		if (command.equals("SE")) {
-			shootEast();
-			return "Shooting east!";
+			return shootEast() ? "Shooting east!" : "You don't have the arrow!";
 		}
 		if (command.equals("SW")) {
-			shootWest();
-			return "Shooting west!";
+			return shootWest() ? "Shooting west!" : "You don't have the arrow!";
 		}
 		if (command.equals("SN")) {
-			shootNorth();
-			return "Shooting north!";
+			return shootNorth() ? "Shooting north!" : "You don't have the arrow!";
 		}
 		if (command.equals("SS")) {
-			shootSouth();
-			return "Shooting south!";
+			return shootSouth() ? "Shooting south!" : "You don't have the arrow!";
 		}
-		
+
 		if (command.equals("R")) {
 			rest();
 			return "Zzz ...";

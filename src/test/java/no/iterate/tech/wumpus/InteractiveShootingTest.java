@@ -47,7 +47,7 @@ public class InteractiveShootingTest {
 		assertEquals("Shooting south!", response);
 		assertEquals(new Point(1, 2), game.arrowPosition);
 	}
-	
+
 	@Test
 	public void diesWhenShootingIntoWallNextToPlayer() throws Exception {
 		Game game = new Game(3, 3);
@@ -55,6 +55,34 @@ public class InteractiveShootingTest {
 		assertEquals("Shooting west!", response);
 		assertTrue(game.over());
 		assertTrue(game.messages.contains("Arrow bounced on wall. You die!"));
+	}
+
+	@Test
+	public void cannotShootEastIfYouDontHaveArrow() throws Exception {
+		Game game = new Game(3, 3, new Point(1, 1));
+		assertEquals("Shooting east!", game.process("SE"));
+		assertEquals("You don't have the arrow!", game.process("SE"));
+	}
+
+	@Test
+	public void cannotShootWestIfYouDontHaveArrow() throws Exception {
+		Game game = new Game(3, 3, new Point(1, 1));
+		assertEquals("Shooting west!", game.process("SW"));
+		assertEquals("You don't have the arrow!", game.process("SW"));
+	}
+
+	@Test
+	public void cannotShootNorthIfYouDontHaveArrow() throws Exception {
+		Game game = new Game(3, 3, new Point(1, 1));
+		assertEquals("Shooting north!", game.process("SN"));
+		assertEquals("You don't have the arrow!", game.process("SN"));
+	}
+
+	@Test
+	public void cannotShootSouthIfYouDontHaveArrow() throws Exception {
+		Game game = new Game(3, 3, new Point(1, 1));
+		assertEquals("Shooting south!", game.process("SS"));
+		assertEquals("You don't have the arrow!", game.process("SS"));
 	}
 
 }

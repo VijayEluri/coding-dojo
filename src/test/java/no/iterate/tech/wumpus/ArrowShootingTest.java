@@ -78,5 +78,13 @@ public class ArrowShootingTest {
 		assertEquals(game.arrowPosition, new Point(0, 0));
 		assertFalse(game.over());
 	}
+	
+	@Test
+	public void cantShootArrowIfYouDontHaveArrow() throws Exception {
+		Game game = new Game(3, 3);
+		assertTrue(game.shootEast());
+		assertFalse(game.shootEast());
+		
+	}
 
 }
