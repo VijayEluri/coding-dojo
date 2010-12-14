@@ -413,6 +413,10 @@ public class Game {
 	public void tick() {
 		turn++;
 		moveWumpus();
+		if(wumpusPosition!= null && wumpusPosition.equals(playerPosition)) {
+			messages.add("The wumpus found you and killed you!");
+			alive = false;
+		}
 	}
 
 	private void moveWumpus() {

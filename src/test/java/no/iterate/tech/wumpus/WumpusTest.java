@@ -109,4 +109,14 @@ public class WumpusTest {
 		assertEquals(new Point(1, 0), game.wumpusPosition);
 	}
 
+	@Test
+	public void wumpusKillsYouIfItMovesAtYou() throws Exception {
+		Game game = new Game(3, 3, new Point(1, 0));
+		game.addWumpus(new Point(1, 1));
+		game.random = new Random(0);
+		assertTrue(game.messages.isEmpty());
+		game.tick();
+		assertTrue(game.messages.contains("The wumpus found you and killed you!"));
+		assertTrue(game.over());
+	}
 }
