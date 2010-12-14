@@ -25,6 +25,9 @@ public class PitFallingTest {
 		assertTrue(game.goEast());
 		assertEquals(game.playerPosition, new Point(1, 0));
 		assertTrue(game.over());
+		assertTrue(game.messages.contains("You fell in a pit, game over ^^"));
 	}
+	
+	
 
 }

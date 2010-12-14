@@ -46,6 +46,7 @@ public class Game {
 
 		switch (squareType) {
 		case PIT:
+			messages.add("You fell in a pit, game over ^^");
 			alive = false;
 		case PATH:
 			playerPosition.x += dx;
