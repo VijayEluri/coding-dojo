@@ -229,6 +229,24 @@ public class Game {
 		if (command.equals("S")) {
 			return goSouth() ? "Moving south" : "You can't go south from here";
 		}
+		
+		if (command.equals("SE")) {
+			shootEast();
+			return "Shooting east!";
+		}
+		if (command.equals("SW")) {
+			shootWest();
+			return "Shooting west!";
+		}
+		if (command.equals("SN")) {
+			shootNorth();
+			return "Shooting north!";
+		}
+		if (command.equals("SS")) {
+			shootSouth();
+			return "Shooting south!";
+		}
+		
 		if (command.equals("R")) {
 			rest();
 			return "Zzz ...";

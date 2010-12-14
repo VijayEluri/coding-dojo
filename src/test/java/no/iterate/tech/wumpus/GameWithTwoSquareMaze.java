@@ -42,31 +42,4 @@ public class GameWithTwoSquareMaze {
 		assertEquals(game.playerPosition, new Point(1, 0));
 		assertTrue(game.over());
 	}
-	
-	@Test
-	public void arrowStaysInLastSquareBeforeHittingWallWhenShootingEast() throws Exception {
-		Game game = new Game(2, 1);
-		game.shootEast();
-		assertEquals(game.playerPosition, new Point(0, 0));
-		assertEquals(game.arrowPosition, new Point(1, 0));
-		assertFalse(game.over());
-	}
-	@Test
-	public void arrowStaysInLastSquareBeforeHittingWallWhenShootingSouth() throws Exception {
-		Game game = new Game(1, 2);
-		game.shootSouth();
-		assertEquals(game.playerPosition, new Point(0, 0));
-		assertEquals(game.arrowPosition, new Point(0, 1));
-		assertFalse(game.over());
-	}
-	
-	@Test
-	public void youDieWhenYouShootIntoAWallNextToYou() throws Exception {
-		Game game = new Game(2, 1);
-		game.createWall(1, 0);
-		assertFalse(game.over());
-		game.shootEast();
-		assertTrue(game.over());
-	}
-
 }
