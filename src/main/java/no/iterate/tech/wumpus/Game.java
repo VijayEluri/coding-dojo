@@ -171,6 +171,8 @@ public class Game {
 				case PATH:
 					if (playerPosition.x == i && playerPosition.y == j) {
 						sb.append("@");
+					} else if (!playerHasArrow() && arrowPosition.x == i && arrowPosition.y == j) {
+						sb.append("+");
 					} else {
 						sb.append(" ");
 					}
