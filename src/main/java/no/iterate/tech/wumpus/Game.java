@@ -6,16 +6,21 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Game {
+
 	enum SquareType {
 		PATH, WALL, PIT, BAT
 	};
 
-	boolean alive = true;
-	SquareType[][] maze;
-	Point playerPosition;
-	Point arrowPosition = null;
-	int turn;
 	boolean running = true;
+	int turn = 0;
+	SquareType[][] maze;
+
+	Point playerPosition;
+	boolean alive = true;
+
+	Point wumpusPosition = null;
+	Point arrowPosition = null;
+
 	List<String> messages = new ArrayList<String>();
 
 	public Game() {
@@ -72,7 +77,7 @@ public class Game {
 			messages.add("You hear wind");
 		}
 	}
-	
+
 	private boolean pitInEast() {
 		try {
 			return maze[playerPosition.x + 1][playerPosition.y] == SquareType.PIT;
@@ -80,7 +85,7 @@ public class Game {
 			return false;
 		}
 	}
-	
+
 	private boolean pitInWest() {
 		try {
 			return maze[playerPosition.x - 1][playerPosition.y] == SquareType.PIT;
@@ -88,7 +93,7 @@ public class Game {
 			return false;
 		}
 	}
-	
+
 	private boolean pitInNorth() {
 		try {
 			return maze[playerPosition.x][playerPosition.y - 1] == SquareType.PIT;
@@ -96,7 +101,7 @@ public class Game {
 			return false;
 		}
 	}
-	
+
 	private boolean pitInSouth() {
 		try {
 			return maze[playerPosition.x][playerPosition.y + 1] == SquareType.PIT;
@@ -212,8 +217,9 @@ public class Game {
 				case PATH:
 					if (playerPosition.x == i && playerPosition.y == j) {
 						sb.append("@");
-					} else if (!playerHasArrow() && arrowPosition.x == i
-							&& arrowPosition.y == j) {
+					} else if (wumpusIsAtPoint(new Point(i, j))) {
+						sb.append("W");
+					} else if (arrowIsAtPoint(new Point(i, j))) {
 						sb.append("+");
 					} else {
 						sb.append(" ");
@@ -227,6 +233,14 @@ public class Game {
 		}
 		addBorderRow(sb);
 		return sb.toString();
+	}
+
+	private boolean arrowIsAtPoint(Point point) {
+		return arrowPosition != null && arrowPosition.equals(point);
+	}
+
+	private boolean wumpusIsAtPoint(Point point) {
+		return wumpusPosition != null && wumpusPosition.equals(point);
 	}
 
 	private void addBorderRow(StringBuilder sb) {
@@ -275,6 +289,7 @@ public class Game {
 		game.createWall(4, 6);
 		game.createPit(1, 4);
 		game.createPit(7, 5);
+		game.addWumpus(new Point(9, 9));
 		return game;
 	}
 
@@ -333,6 +348,10 @@ public class Game {
 
 	private String getTurnDisplay() {
 		return "Turn: " + turn;
+	}
+
+	public void addWumpus(Point wumpusPosition) {
+		this.wumpusPosition = wumpusPosition;
 	}
 
 }
