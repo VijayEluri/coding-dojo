@@ -39,6 +39,7 @@ public class Game {
 			playerPosition.x += dx;
 			playerPosition.y += dy;
 			pickUpArrowIfInSameSquareAsPlayer();
+			turn++;
 			return true;
 		default:
 			return false;
