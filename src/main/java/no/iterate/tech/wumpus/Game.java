@@ -305,7 +305,7 @@ public class Game {
 	}
 
 	private void run() {
-		System.out.println("Welcome to Hunting the Wumpus! Play!");
+		System.out.println("Welcome to Hunt the Wumpus! Play!");
 		while (running && alive) {
 			System.out.print("> ");
 			Scanner scanner = new Scanner(System.in);

@@ -1,5 +1,5 @@
-Hunting the Wumpus
-==================
+Hunt the Wumpus
+===============
 
 This is the result of a Tech forum Code Dojo at Iterate.
 

@@ -5,6 +5,7 @@
   <groupId>no.iterate.tech</groupId>
   <artifactId>wumpus</artifactId>
   <version>1.0-SNAPSHOT</version>
+  <name>Hunt the Wumpus</name>
 
   <dependencies>
     <dependency>
