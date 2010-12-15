@@ -26,25 +26,165 @@ public class Game {
 
 	Random random = new Random();
 
+	public static void main(String[] args) {
+		Game game = createNewGameWithA10x10Maze();
+		game.run();
+	}
+
+	private static Game createNewGameWithA10x10Maze() {
+		Game game = new Game(10, 10);
+		game.createWall(0, 1);
+		game.createWall(0, 2);
+		game.createWall(0, 3);
+		game.createWall(0, 4);
+		game.createWall(0, 5);
+		game.createWall(2, 3);
+		game.createWall(2, 4);
+		game.createWall(2, 5);
+		game.createWall(2, 6);
+		game.createWall(3, 3);
+		game.createWall(3, 4);
+		game.createWall(3, 5);
+		game.createWall(3, 6);
+		game.createWall(4, 3);
+		game.createWall(4, 4);
+		game.createWall(4, 5);
+		game.createWall(4, 6);
+		game.createPit(1, 4);
+		game.createPit(7, 5);
+		game.addWumpus(new Point(6, 3));
+		return game;
+	}
+
 	public Game() {
 		this(1, 1);
 	}
 
-	public Game(int x, int y) {
-		this(x, y, new Point(0, 0));
+	public Game(int mazeWidth, int mazeHeight) {
+		this(mazeWidth, mazeHeight, new Point(0, 0));
 	}
 
-	public Game(int x, int y, Point playerPosition) {
-		maze = new SquareType[x][y];
-		for (int i = 0; i < x; i++) {
-			for (int j = 0; j < y; j++) {
-				maze[i][j] = SquareType.PATH;
+	public Game(int mazeWidth, int mazeHeight, Point playerPosition) {
+		maze = new SquareType[mazeWidth][mazeHeight];
+		for (int x = 0; x < mazeWidth; x++) {
+			for (int y = 0; y < mazeHeight; y++) {
+				maze[x][y] = SquareType.PATH;
 			}
 		}
 		this.playerPosition = playerPosition;
 	}
 
-	public boolean go(int dx, int dy) {
+	public void createWall(int x, int y) {
+		maze[x][y] = SquareType.WALL;
+	}
+
+	public void createPit(int x, int y) {
+		maze[x][y] = SquareType.PIT;
+	}
+
+	public void addWumpus(Point wumpusPosition) {
+		try {
+			if (maze[wumpusPosition.x][wumpusPosition.y] != SquareType.PATH) {
+				throw new IllegalStateException("Square is not a path");
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new IllegalStateException("Wumpus is outside the maze", e);
+		}
+		this.wumpusPosition = wumpusPosition;
+	}
+
+	public void run() {
+		System.out.println("Welcome to Hunt the Wumpus! Play!");
+		while (running && alive) {
+			System.out.print("> ");
+			Scanner scanner = new Scanner(System.in);
+			String command = scanner.nextLine();
+			System.out.println(process(command).trim());
+			while (!messages.isEmpty()) {
+				System.out.println(messages.remove(0));
+			}
+		}
+	}
+
+	protected boolean over() {
+		return !alive;
+	}
+
+	public String process(String command) {
+		if (command.equals("E")) {
+			return goEast() ? "Moving east" : "You can't go east from here";
+		}
+		if (command.equals("W")) {
+			return goWest() ? "Moving west" : "You can't go west from here";
+		}
+		if (command.equals("N")) {
+			return goNorth() ? "Moving north" : "You can't go north from here";
+		}
+		if (command.equals("S")) {
+			return goSouth() ? "Moving south" : "You can't go south from here";
+		}
+
+		if (command.equals("SE")) {
+			return shootEast() ? "Shooting east!" : "You don't have the arrow!";
+		}
+		if (command.equals("SW")) {
+			return shootWest() ? "Shooting west!" : "You don't have the arrow!";
+		}
+		if (command.equals("SN")) {
+			return shootNorth() ? "Shooting north!"
+					: "You don't have the arrow!";
+		}
+		if (command.equals("SS")) {
+			return shootSouth() ? "Shooting south!"
+					: "You don't have the arrow!";
+		}
+
+		if (command.equals("R")) {
+			rest();
+			return "Zzz ...";
+		}
+		if (command.equals("P")) {
+			return getTurnDisplay() + ",  " + getInventoryDisplay() + "\n"
+					+ getMazeDisplay();
+		}
+		if (command.equals("Q")) {
+			running = false;
+			return "Bye!";
+		}
+
+		return "Can't understand you. Try ([S]{E,W,N,S}|R|P|Q) ;-)";
+	}
+
+	protected void tick() {
+		turn++;
+		moveWumpus();
+		if (wumpusPosition != null && wumpusPosition.equals(playerPosition)) {
+			messages.add("The wumpus found you and killed you!");
+			alive = false;
+		}
+	}
+
+	protected void rest() {
+		tick();
+	}
+
+	protected boolean goEast() {
+		return go(1, 0);
+	}
+
+	protected boolean goWest() {
+		return go(-1, 0);
+	}
+
+	protected boolean goNorth() {
+		return go(0, -1);
+	}
+
+	protected boolean goSouth() {
+		return go(0, 1);
+	}
+
+	private boolean go(int dx, int dy) {
 		SquareType squareType;
 		try {
 			squareType = maze[playerPosition.x + dx][playerPosition.y + dy];
@@ -149,48 +289,32 @@ public class Game {
 		}
 	}
 
-	public boolean goNorth() {
-		return go(0, -1);
+	protected boolean playerHasArrow() {
+		return arrowPosition == null;
 	}
 
-	public boolean goEast() {
-		return go(1, 0);
-	}
-
-	public boolean goWest() {
-		return go(-1, 0);
-	}
-
-	public boolean goSouth() {
-		return go(0, 1);
-	}
-
-	public boolean over() {
-		return !alive;
-	}
-
-	public boolean shootNorth() {
-		return shoot(0, -1);
-	}
-
-	public boolean shootSouth() {
-		return shoot(0, 1);
-	}
-
-	public boolean shootWest() {
-		return shoot(-1, 0);
-	}
-
-	public boolean shootEast() {
+	protected boolean shootEast() {
 		return shoot(1, 0);
 	}
 
-	private boolean shoot(int x, int y) {
+	protected boolean shootWest() {
+		return shoot(-1, 0);
+	}
+
+	protected boolean shootNorth() {
+		return shoot(0, -1);
+	}
+
+	protected boolean shootSouth() {
+		return shoot(0, 1);
+	}
+
+	private boolean shoot(int dx, int dy) {
 		if (!playerHasArrow()) {
 			return false;
 		}
 		arrowPosition = (Point) playerPosition.clone();
-		flyingArrow(x, y);
+		flyingArrow(dx, dy);
 		tick();
 		return true;
 	}
@@ -234,191 +358,6 @@ public class Game {
 		}
 	}
 
-	public void createWall(int x, int y) {
-		maze[x][y] = SquareType.WALL;
-	}
-
-	public void createPit(int x, int y) {
-		maze[x][y] = SquareType.PIT;
-	}
-
-	public void rest() {
-		tick();
-	}
-
-	public boolean playerHasArrow() {
-		return arrowPosition == null;
-	}
-
-	public String printMaze() {
-		StringBuilder sb = new StringBuilder();
-		addBorderRow(sb);
-		for (int j = 0; j < maze[0].length; j++) {
-			sb.append("#");
-			for (int i = 0; i < maze.length; i++) {
-				switch (maze[i][j]) {
-				case WALL:
-					sb.append("x");
-					break;
-				case PIT:
-					sb.append("o");
-					break;
-				case PATH:
-					if (playerPosition.x == i && playerPosition.y == j) {
-						sb.append("@");
-					} else if (wumpusIsAtPoint(new Point(i, j))) {
-						sb.append("W");
-					} else if (arrowIsAtPoint(new Point(i, j))) {
-						sb.append("+");
-					} else {
-						sb.append(" ");
-					}
-					break;
-				default:
-					break;
-				}
-			}
-			sb.append("#\n");
-		}
-		addBorderRow(sb);
-		return sb.toString();
-	}
-
-	private boolean arrowIsAtPoint(Point point) {
-		return arrowPosition != null && arrowPosition.equals(point);
-	}
-
-	private boolean wumpusIsAtPoint(Point point) {
-		return wumpusPosition != null && wumpusPosition.equals(point);
-	}
-
-	private void addBorderRow(StringBuilder sb) {
-		for (int i = 0; i < maze.length + 2; i++) {
-			sb.append("#");
-		}
-		sb.append("\n");
-	}
-
-	public static void main(String[] args) {
-		Game game = createNewGameWithAMaze();
-		game.run();
-	}
-
-	private void run() {
-		System.out.println("Welcome to Hunt the Wumpus! Play!");
-		while (running && alive) {
-			System.out.print("> ");
-			Scanner scanner = new Scanner(System.in);
-			String command = scanner.nextLine();
-			System.out.println(process(command).trim());
-			while (!messages.isEmpty()) {
-				System.out.println(messages.remove(0));
-			}
-		}
-	}
-
-	private static Game createNewGameWithAMaze() {
-		Game game = new Game(10, 10);
-		game.createWall(0, 1);
-		game.createWall(0, 2);
-		game.createWall(0, 3);
-		game.createWall(0, 4);
-		game.createWall(0, 5);
-		game.createWall(2, 3);
-		game.createWall(2, 4);
-		game.createWall(2, 5);
-		game.createWall(2, 6);
-		game.createWall(3, 3);
-		game.createWall(3, 4);
-		game.createWall(3, 5);
-		game.createWall(3, 6);
-		game.createWall(4, 3);
-		game.createWall(4, 4);
-		game.createWall(4, 5);
-		game.createWall(4, 6);
-		game.createPit(1, 4);
-		game.createPit(7, 5);
-		game.addWumpus(new Point(6, 3));
-		return game;
-	}
-
-	public String process(String command) {
-		if (command.equals("E")) {
-			return goEast() ? "Moving east" : "You can't go east from here";
-		}
-		if (command.equals("W")) {
-			return goWest() ? "Moving west" : "You can't go west from here";
-		}
-		if (command.equals("N")) {
-			return goNorth() ? "Moving north" : "You can't go north from here";
-		}
-		if (command.equals("S")) {
-			return goSouth() ? "Moving south" : "You can't go south from here";
-		}
-
-		if (command.equals("SE")) {
-			return shootEast() ? "Shooting east!" : "You don't have the arrow!";
-		}
-		if (command.equals("SW")) {
-			return shootWest() ? "Shooting west!" : "You don't have the arrow!";
-		}
-		if (command.equals("SN")) {
-			return shootNorth() ? "Shooting north!"
-					: "You don't have the arrow!";
-		}
-		if (command.equals("SS")) {
-			return shootSouth() ? "Shooting south!"
-					: "You don't have the arrow!";
-		}
-
-		if (command.equals("R")) {
-			rest();
-			return "Zzz ...";
-		}
-		if (command.equals("P")) {
-			return getTurnDisplay() + ",  " + getInventoryDisplay() + "\n"
-					+ printMaze();
-		}
-		if (command.equals("Q")) {
-			running = false;
-			return "Bye!";
-		}
-
-		return "Can't understand you. Try ([S]{E,W,N,S}|R|P|Q) ;-)";
-	}
-
-	private String getInventoryDisplay() {
-		if (playerHasArrow()) {
-			return "Inventory: +";
-		} else {
-			return "Inventory: empty";
-		}
-	}
-
-	private String getTurnDisplay() {
-		return "Turn: " + turn;
-	}
-
-	public void addWumpus(Point wumpusPosition) {
-		try {
-			if (maze[wumpusPosition.x][wumpusPosition.y] != SquareType.PATH) {
-				throw new IllegalStateException("Square is not a path");
-			}
-		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new IllegalStateException("Wumpus is outside the maze", e);
-		}
-		this.wumpusPosition = wumpusPosition;
-	}
-
-	public void tick() {
-		turn++;
-		moveWumpus();
-		if(wumpusPosition!= null && wumpusPosition.equals(playerPosition)) {
-			messages.add("The wumpus found you and killed you!");
-			alive = false;
-		}
-	}
-
 	private void moveWumpus() {
 		if (wumpusPosition == null) {
 			return;
@@ -440,7 +379,6 @@ public class Game {
 		default:
 			throw new RuntimeException("This is not possible!");
 		}
-
 	}
 
 	private boolean moveWumpusSouth() {
@@ -485,6 +423,67 @@ public class Game {
 		} catch (ArrayIndexOutOfBoundsException e) {
 		}
 		return false;
+	}
+
+	private String getTurnDisplay() {
+		return "Turn: " + turn;
+	}
+
+	private String getInventoryDisplay() {
+		if (playerHasArrow()) {
+			return "Inventory: +";
+		} else {
+			return "Inventory: empty";
+		}
+	}
+
+	protected String getMazeDisplay() {
+		StringBuilder sb = new StringBuilder();
+		addBorderRow(sb);
+		for (int j = 0; j < maze[0].length; j++) {
+			sb.append("#");
+			for (int i = 0; i < maze.length; i++) {
+				switch (maze[i][j]) {
+				case WALL:
+					sb.append("x");
+					break;
+				case PIT:
+					sb.append("o");
+					break;
+				case PATH:
+					if (playerPosition.x == i && playerPosition.y == j) {
+						sb.append("@");
+					} else if (wumpusIsAtPoint(new Point(i, j))) {
+						sb.append("W");
+					} else if (arrowIsAtPoint(new Point(i, j))) {
+						sb.append("+");
+					} else {
+						sb.append(" ");
+					}
+					break;
+				default:
+					break;
+				}
+			}
+			sb.append("#\n");
+		}
+		addBorderRow(sb);
+		return sb.toString();
+	}
+
+	private void addBorderRow(StringBuilder sb) {
+		for (int i = 0; i < maze.length + 2; i++) {
+			sb.append("#");
+		}
+		sb.append("\n");
+	}
+
+	private boolean arrowIsAtPoint(Point point) {
+		return arrowPosition != null && arrowPosition.equals(point);
+	}
+
+	private boolean wumpusIsAtPoint(Point point) {
+		return wumpusPosition != null && wumpusPosition.equals(point);
 	}
 
 }
