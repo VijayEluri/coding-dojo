@@ -1,6 +1,9 @@
 package no.iterate.tech.wumpus;
 
 import java.awt.Point;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -18,6 +21,7 @@ public class Game {
 
 	Point playerPosition;
 	boolean alive = true;
+	PrintWriter recorder;
 
 	Point wumpusPosition = null;
 	Point arrowPosition = null;
@@ -95,6 +99,7 @@ public class Game {
 
 	public void run() {
 		System.out.println("Welcome to Hunt the Wumpus! Play!");
+		startRecording();
 		while (running && alive) {
 			System.out.print("> ");
 			Scanner scanner = new Scanner(System.in);
@@ -104,6 +109,20 @@ public class Game {
 				System.out.println(messages.remove(0));
 			}
 		}
+		stopRecording();
+	}
+
+	private void startRecording() {
+		try {
+			recorder = new PrintWriter(new File("lastGame.txt"));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void stopRecording() {
+		recorder.close();
+
 	}
 
 	protected boolean over() {
@@ -144,8 +163,7 @@ public class Game {
 			return "Zzz ...";
 		}
 		if (command.equals("P")) {
-			return getTurnDisplay() + ",  " + getInventoryDisplay() + "\n"
-					+ getMazeDisplay();
+			return displayTurnInventoryAndMaze();
 		}
 		if (command.equals("Q")) {
 			running = false;
@@ -155,12 +173,20 @@ public class Game {
 		return "Can't understand you. Try ([S]{E,W,N,S}|R|P|Q) ;-)";
 	}
 
+	private String displayTurnInventoryAndMaze() {
+		return getTurnDisplay() + ",  " + getInventoryDisplay() + "\n"
+				+ getMazeDisplay();
+	}
+
 	protected void tick() {
 		turn++;
 		moveWumpus();
 		if (wumpusPosition != null && wumpusPosition.equals(playerPosition)) {
 			messages.add("The wumpus found you and killed you!");
 			alive = false;
+		}
+		if(recorder != null) {
+			recorder.print(displayTurnInventoryAndMaze());
 		}
 	}
 
