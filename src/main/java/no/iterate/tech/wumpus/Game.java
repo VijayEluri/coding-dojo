@@ -185,7 +185,7 @@ public class Game {
 			messages.add("The wumpus found you and killed you!");
 			alive = false;
 		}
-		if(recorder != null) {
+		if (recorder != null) {
 			recorder.print(displayTurnInventoryAndMaze());
 		}
 	}
