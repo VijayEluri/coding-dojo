@@ -1,7 +1,7 @@
 Hunt the Wumpus
 ===============
 
-This is the result of a Tech forum Code Dojo at Iterate 2010-12-14.
+This is the result of the Coding Dojo at Iterate 2010-12-14.
 
 
 Getting started

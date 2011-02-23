@@ -1,7 +1,7 @@
-Code Dojo
-=========
+Coding Dojo
+===========
 
-This repo contains the results of a Tech forum Code Dojos at Iterate.
+This repo contains the results of Coding Dojos at Iterate.
 
 
 License
