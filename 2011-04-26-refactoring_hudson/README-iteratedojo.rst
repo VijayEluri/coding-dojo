@@ -18,9 +18,11 @@ A verified but not necessarily the best process::
 In Eclipse:
 
 #. Import - Maven - Existing Maven Projects - select the core/ folder and its pom.xml => project jenkins-core created
-#. Set the projects Java Compiler  - C. compliance level to 1.5
-#. Build the project to produce generate sources::
+#. Make sure that the projects' Compiler compliance level is equal to or higher than 1.5
+#. Build the project from the command line to produce generate sources::
 
 	mvn compile
 
 #. ... refresh the project and add the source folders ``target/generated-sources/localizer/`` and ``target/generated-sources/antlr/``
+
+#. Now you may want to verify that all works by running ``mvn test`` from the command line
