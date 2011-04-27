@@ -575,7 +575,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     @CLIResolver
     public static Hudson getInstance() {
-    	/**/StackTraceElement[] stack = new Exception().getStackTrace();
+    	/*StackTraceElement[] stack = new Exception().getStackTrace();
     	StringBuilder stackPrint = new StringBuilder();
     	for (StackTraceElement call : stack) {
     		final boolean inHudson = call.getClassName().equals(Hudson.class.getName());
@@ -587,13 +587,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 				.append(call.getClassName()).append(" #")
 				.append(call.getLineNumber())
 				.append('\n');
+		}
 
-			if (inHudson && "<init>".equals(call.getMethodName())) {
-				System.err.println("FYI: getInstance called from: \n" + stackPrint);
-				break;
-			}
-
-		} //*/
+		// No good way to limit only to calls from the constructor as it could start many threadscalling this...
+		System.err.println("FYI: getInstance called during construction from: \n" + stackPrint);
+    	//*/
 
         return theInstance;
     }
@@ -627,8 +625,21 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     	// As hudson is starting, grant this process full control
         try {
         	Hudson instance = new Hudson(root, context, null);
+
+        	final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
+            // initialization consists of ...
+        	instance.executeReactor( is,	// -> getInstance [new thread]
+            		instance.pluginManager.initTasks(is),    // loading and preparing plugins
+            		instance.loadTasks(),                    // load jobs
+                    InitMilestone.ordering()        // forced ordering among key milestones
+            );
+
+            if(KILL_AFTER_LOAD)
+                System.exit(0);
+
         	instance.postCreateNotifyListeners();
-            return instance;
+
+        	return instance;
         } finally {
             SecurityContextHolder.clearContext();
         }
@@ -640,15 +651,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      *      If non-null, use existing plugin manager.  create a new one.
      */
     private Hudson(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
-        this.root = root;
+    	this.root = root;
         this.servletContext = context;
         computeVersion(context);
+
         if(theInstance!=null)
             throw new IllegalStateException("second instance");
         theInstance = this;
 
         // doing this early allows InitStrategy to set environment upfront
-        final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
+        InitStrategy.get(Thread.currentThread().getContextClassLoader());
 
         Trigger.timer = new Timer("Hudson cron thread");
         queue = new Queue(CONSISTENT_HASH?LoadBalancer.CONSISTENT_HASH:LoadBalancer.DEFAULT);
@@ -688,34 +700,28 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
         adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+VERSION_HASH);
 
-        // initialization consists of ...
-        executeReactor( is,
-                pluginManager.initTasks(is),    // loading and preparing plugins
-                loadTasks(),                    // load jobs
-                InitMilestone.ordering()        // forced ordering among key milestones
-        );
+        if(!KILL_AFTER_LOAD) {
+        	// Don't start server if we're going to exit soon...
+	        if(slaveAgentPort!=-1) {
+	            try {
+	                tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+	            } catch (BindException e) {
+	                new AdministrativeError(getClass().getName()+".tcpBind",
+	                        "Failed to listen to incoming slave connection",
+	                        "Failed to listen to incoming slave connection. <a href='configure'>Change the port number</a> to solve the problem.",e);
+	            }
+	        } else
+	            tcpSlaveAgentListener = null;
 
-        if(KILL_AFTER_LOAD)
-            System.exit(0);
-
-        if(slaveAgentPort!=-1) {
-            try {
-                tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
-            } catch (BindException e) {
-                new AdministrativeError(getClass().getName()+".tcpBind",
-                        "Failed to listen to incoming slave connection",
-                        "Failed to listen to incoming slave connection. <a href='configure'>Change the port number</a> to solve the problem.",e);
-            }
-        } else
-            tcpSlaveAgentListener = null;
-
-        try {
-            udpBroadcastThread = new UDPBroadcastThread(this);
-            udpBroadcastThread.start();
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Faild to broadcast over UDP",e);
+	        try {
+	            udpBroadcastThread = new UDPBroadcastThread(this);
+	            udpBroadcastThread.start();
+	        } catch (IOException e) {
+	            LOGGER.log(Level.WARNING, "Faild to broadcast over UDP",e);
+	        }
+	        dnsMultiCast = new DNSMultiCast(this);
         }
-        dnsMultiCast = new DNSMultiCast(this);
+
     }
 
     /** Call after constructor finishes and {@link #getInstance()} is set to notify listeners. */
