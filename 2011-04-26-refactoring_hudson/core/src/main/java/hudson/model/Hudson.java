@@ -626,6 +626,11 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         try {
         	Hudson instance = new Hudson(root, context, null);
 
+        	// getInstance() is used by the code further down
+            if(theInstance!=null)
+                throw new IllegalStateException("second instance");
+            theInstance = instance;
+
         	final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
             // initialization consists of ...
         	instance.executeReactor( is,	// -> getInstance [new thread]
@@ -654,10 +659,6 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
     	this.root = root;
         this.servletContext = context;
         computeVersion(context);
-
-        if(theInstance!=null)
-            throw new IllegalStateException("second instance");
-        theInstance = this;
 
         // doing this early allows InitStrategy to set environment upfront
         InitStrategy.get(Thread.currentThread().getContextClassLoader());
