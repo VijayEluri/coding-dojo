@@ -625,112 +625,107 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     public static Hudson createHudson(File root, ServletContext context)
 			throws IOException, InterruptedException, ReactorException {
-		return new Hudson(root, context);
+    	// As hudson is starting, grant this process full control
+        try {
+        	return new Hudson(root, context, null);
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
 	}
-
-    private Hudson(File root, ServletContext context) throws IOException, InterruptedException, ReactorException {
-        this(root,context,null);
-    }
 
     /**
      * @param pluginManager
      *      If non-null, use existing plugin manager.  create a new one.
      */
     private Hudson(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
-    	// As hudson is starting, grant this process full control
-    	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+        this.root = root;
+        this.servletContext = context;
+        computeVersion(context);
+        if(theInstance!=null)
+            throw new IllegalStateException("second instance");
+        theInstance = this;
+
+        // doing this early allows InitStrategy to set environment upfront
+        final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
+
+        Trigger.timer = new Timer("Hudson cron thread");
+        queue = new Queue(CONSISTENT_HASH?LoadBalancer.CONSISTENT_HASH:LoadBalancer.DEFAULT);
+
         try {
-            this.root = root;
-            this.servletContext = context;
-            computeVersion(context);
-            if(theInstance!=null)
-                throw new IllegalStateException("second instance");
-            theInstance = this;
-
-            // doing this early allows InitStrategy to set environment upfront
-            final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
-
-            Trigger.timer = new Timer("Hudson cron thread");
-            queue = new Queue(CONSISTENT_HASH?LoadBalancer.CONSISTENT_HASH:LoadBalancer.DEFAULT);
-
-            try {
-                dependencyGraph = DependencyGraph.EMPTY;
-            } catch (InternalError e) {
-                if(e.getMessage().contains("window server")) {
-                    throw new Error("Looks like the server runs without X. Please specify -Djava.awt.headless=true as JVM option",e);
-                }
-                throw e;
+            dependencyGraph = DependencyGraph.EMPTY;
+        } catch (InternalError e) {
+            if(e.getMessage().contains("window server")) {
+                throw new Error("Looks like the server runs without X. Please specify -Djava.awt.headless=true as JVM option",e);
             }
-
-            // get or create the secret
-            TextFile secretFile = new TextFile(new File(Hudson.getInstance().getRootDir(),"secret.key")); // -> getInstance
-            if(secretFile.exists()) {
-                secretKey = secretFile.readTrim();
-            } else {
-                SecureRandom sr = new SecureRandom();
-                byte[] random = new byte[32];
-                sr.nextBytes(random);
-                secretKey = Util.toHexString(random);
-                secretFile.write(secretKey);
-            }
-
-            try {
-                proxy = ProxyConfiguration.load(); // -> getInstance
-            } catch (IOException e) {
-                LOGGER.log(SEVERE, "Failed to load proxy configuration", e);
-            }
-
-            if (pluginManager==null)
-                pluginManager = new LocalPluginManager(this);
-            this.pluginManager = pluginManager;
-            // JSON binding needs to be able to see all the classes from all the plugins
-            WebApp.get(servletContext).setClassLoader(pluginManager.uberClassLoader);
-
-            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+VERSION_HASH);
-
-            // initialization consists of ...
-            executeReactor( is,
-                    pluginManager.initTasks(is),    // loading and preparing plugins
-                    loadTasks(),                    // load jobs
-                    InitMilestone.ordering()        // forced ordering among key milestones
-            );
-
-            if(KILL_AFTER_LOAD)
-                System.exit(0);
-
-            if(slaveAgentPort!=-1) {
-                try {
-                    tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
-                } catch (BindException e) {
-                    new AdministrativeError(getClass().getName()+".tcpBind",
-                            "Failed to listen to incoming slave connection",
-                            "Failed to listen to incoming slave connection. <a href='configure'>Change the port number</a> to solve the problem.",e);
-                }
-            } else
-                tcpSlaveAgentListener = null;
-
-            try {
-                udpBroadcastThread = new UDPBroadcastThread(this);
-                udpBroadcastThread.start();
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Faild to broadcast over UDP",e);
-            }
-            dnsMultiCast = new DNSMultiCast(this);
-
-            updateComputerList(); // -> getInstance
-
-            {// master is online now
-                Computer c = toComputer(); // -> getInstance
-                if(c!=null)
-                    for (ComputerListener cl : ComputerListener.all()) // -> getInstance
-                        cl.onOnline(c,StreamTaskListener.fromStdout()); // -> getInstance
-            }
-
-            for (ItemListener l : ItemListener.all()) // -> getInstance
-                l.onLoaded();
-        } finally {
-            SecurityContextHolder.clearContext();
+            throw e;
         }
+
+        // get or create the secret
+        TextFile secretFile = new TextFile(new File(Hudson.getInstance().getRootDir(),"secret.key")); // -> getInstance
+        if(secretFile.exists()) {
+            secretKey = secretFile.readTrim();
+        } else {
+            SecureRandom sr = new SecureRandom();
+            byte[] random = new byte[32];
+            sr.nextBytes(random);
+            secretKey = Util.toHexString(random);
+            secretFile.write(secretKey);
+        }
+
+        try {
+            proxy = ProxyConfiguration.load(); // -> getInstance
+        } catch (IOException e) {
+            LOGGER.log(SEVERE, "Failed to load proxy configuration", e);
+        }
+
+        if (pluginManager==null)
+            pluginManager = new LocalPluginManager(this);
+        this.pluginManager = pluginManager;
+        // JSON binding needs to be able to see all the classes from all the plugins
+        WebApp.get(servletContext).setClassLoader(pluginManager.uberClassLoader);
+
+        adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+VERSION_HASH);
+
+        // initialization consists of ...
+        executeReactor( is,
+                pluginManager.initTasks(is),    // loading and preparing plugins
+                loadTasks(),                    // load jobs
+                InitMilestone.ordering()        // forced ordering among key milestones
+        );
+
+        if(KILL_AFTER_LOAD)
+            System.exit(0);
+
+        if(slaveAgentPort!=-1) {
+            try {
+                tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+            } catch (BindException e) {
+                new AdministrativeError(getClass().getName()+".tcpBind",
+                        "Failed to listen to incoming slave connection",
+                        "Failed to listen to incoming slave connection. <a href='configure'>Change the port number</a> to solve the problem.",e);
+            }
+        } else
+            tcpSlaveAgentListener = null;
+
+        try {
+            udpBroadcastThread = new UDPBroadcastThread(this);
+            udpBroadcastThread.start();
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Faild to broadcast over UDP",e);
+        }
+        dnsMultiCast = new DNSMultiCast(this);
+
+        updateComputerList(); // -> getInstance
+
+        {// master is online now
+            Computer c = toComputer(); // -> getInstance
+            if(c!=null)
+                for (ComputerListener cl : ComputerListener.all()) // -> getInstance
+                    cl.onOnline(c,StreamTaskListener.fromStdout()); // -> getInstance
+        }
+
+        for (ItemListener l : ItemListener.all()) // -> getInstance
+            l.onLoaded();
     }
 
     /**
