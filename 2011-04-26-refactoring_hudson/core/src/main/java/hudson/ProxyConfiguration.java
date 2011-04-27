@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -48,14 +48,24 @@ import com.thoughtworks.xstream.XStream;
  * <p>
  * Proxy authentication (including NTLM) is implemented by setting a default
  * {@link Authenticator} which provides a {@link PasswordAuthentication}
- * (as described in the Java 6 tech note 
+ * (as described in the Java 6 tech note
  * <a href="http://java.sun.com/javase/6/docs/technotes/guides/net/http-auth.html">
  * Http Authentication</a>).
- * 
+ *
  * @see Hudson#proxy
  */
 public final class ProxyConfiguration implements Saveable {
-    public final String name;
+
+	private static File rootDir = null;
+
+    private static File getRootDirOrFail() throws IllegalStateException {
+    	if (rootDir == null)
+    		throw new IllegalStateException("The root directory isn't set yet - it should have been " +
+    				"set before this class is used, during Hudson initialization.");
+		return rootDir;
+	}
+
+	public final String name;
     public final int port;
 
     /**
@@ -95,15 +105,25 @@ public final class ProxyConfiguration implements Saveable {
     }
 
     public static XmlFile getXmlFile() {
-        return new XmlFile(XSTREAM, new File(Hudson.getInstance().getRootDir(), "proxy.xml"));
+        return new XmlFile(XSTREAM, new File(getRootDirOrFail(), "proxy.xml"));
     }
 
+    /** @deprecated Use {@link #loadFromDir(File)} instead */
     public static ProxyConfiguration load() throws IOException {
+    	return loadInternal();
+    }
+
+    private static ProxyConfiguration loadInternal() throws IOException {
         XmlFile f = getXmlFile();
         if(f.exists())
             return (ProxyConfiguration) f.read();
         else
             return null;
+    }
+
+    public static ProxyConfiguration loadFromDir(File hudsonRootDir) throws IOException {
+    	ProxyConfiguration.rootDir = hudsonRootDir;
+    	return loadInternal();
     }
 
     /**

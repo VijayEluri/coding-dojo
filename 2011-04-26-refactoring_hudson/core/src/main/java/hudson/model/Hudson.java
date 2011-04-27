@@ -575,7 +575,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     @CLIResolver
     public static Hudson getInstance() {
-    	/*StackTraceElement[] stack = new Exception().getStackTrace();
+    	/**/StackTraceElement[] stack = new Exception().getStackTrace();
     	StringBuilder stackPrint = new StringBuilder();
     	for (StackTraceElement call : stack) {
     		final boolean inHudson = call.getClassName().equals(Hudson.class.getName());
@@ -593,8 +593,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 				break;
 			}
 
-		}
-		*/
+		} //*/
 
         return theInstance;
     }
@@ -664,7 +663,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
 
         // get or create the secret
-        TextFile secretFile = new TextFile(new File(Hudson.getInstance().getRootDir(),"secret.key")); // -> getInstance
+        TextFile secretFile = new TextFile(new File(getRootDir(),"secret.key")); // -> getInstance
         if(secretFile.exists()) {
             secretKey = secretFile.readTrim();
         } else {
@@ -676,7 +675,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
 
         try {
-            proxy = ProxyConfiguration.load(); // -> getInstance
+            proxy = ProxyConfiguration.loadFromDir(getRootDir()); // -> getInstance
         } catch (IOException e) {
             LOGGER.log(SEVERE, "Failed to load proxy configuration", e);
         }
