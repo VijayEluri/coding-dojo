@@ -212,7 +212,7 @@ public final class WebAppMain implements ServletContextListener {
                 @Override
                 public void run() {
                     try {
-                        context.setAttribute(APP,new Hudson(home,context));
+                        context.setAttribute(APP,Hudson.createHudson(home, context));
 
                         // trigger the loading of changelogs in the background,
                         // but give the system 10 seconds so that the first page

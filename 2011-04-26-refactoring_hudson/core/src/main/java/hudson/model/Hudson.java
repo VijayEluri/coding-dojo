@@ -623,7 +623,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      */
     private transient final LogRecorderManager log = new LogRecorderManager();
 
-    public Hudson(File root, ServletContext context) throws IOException, InterruptedException, ReactorException {
+    public static Hudson createHudson(File root, ServletContext context)
+			throws IOException, InterruptedException, ReactorException {
+		return new Hudson(root, context);
+	}
+
+    private Hudson(File root, ServletContext context) throws IOException, InterruptedException, ReactorException {
         this(root,context,null);
     }
 
@@ -631,7 +636,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
      * @param pluginManager
      *      If non-null, use existing plugin manager.  create a new one.
      */
-    public Hudson(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
+    private Hudson(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
     	// As hudson is starting, grant this process full control
     	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
         try {
@@ -658,7 +663,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             }
 
             // get or create the secret
-            TextFile secretFile = new TextFile(new File(Hudson.getInstance().getRootDir(),"secret.key"));
+            TextFile secretFile = new TextFile(new File(Hudson.getInstance().getRootDir(),"secret.key")); // -> getInstance
             if(secretFile.exists()) {
                 secretKey = secretFile.readTrim();
             } else {
@@ -670,7 +675,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             }
 
             try {
-                proxy = ProxyConfiguration.load();
+                proxy = ProxyConfiguration.load(); // -> getInstance
             } catch (IOException e) {
                 LOGGER.log(SEVERE, "Failed to load proxy configuration", e);
             }
@@ -712,16 +717,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             }
             dnsMultiCast = new DNSMultiCast(this);
 
-            updateComputerList();
+            updateComputerList(); // -> getInstance
 
             {// master is online now
-                Computer c = toComputer();
+                Computer c = toComputer(); // -> getInstance
                 if(c!=null)
-                    for (ComputerListener cl : ComputerListener.all())
-                        cl.onOnline(c,StreamTaskListener.fromStdout());
+                    for (ComputerListener cl : ComputerListener.all()) // -> getInstance
+                        cl.onOnline(c,StreamTaskListener.fromStdout()); // -> getInstance
             }
 
-            for (ItemListener l : ItemListener.all())
+            for (ItemListener l : ItemListener.all()) // -> getInstance
                 l.onLoaded();
         } finally {
             SecurityContextHolder.clearContext();
@@ -3818,7 +3823,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
         }
     }
 
-    /**
+	/**
      * Hash of {@link #VERSION}.
      */
     public static String VERSION_HASH;
