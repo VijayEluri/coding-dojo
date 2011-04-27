@@ -575,6 +575,27 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
     @CLIResolver
     public static Hudson getInstance() {
+    	/*StackTraceElement[] stack = new Exception().getStackTrace();
+    	StringBuilder stackPrint = new StringBuilder();
+    	for (StackTraceElement call : stack) {
+    		final boolean inHudson = call.getClassName().equals(Hudson.class.getName());
+			if (inHudson && "getInstance".equals(call.getMethodName()))
+				continue;
+
+			stackPrint.append('\t')
+				.append(call.getMethodName()).append(": ")
+				.append(call.getClassName()).append(" #")
+				.append(call.getLineNumber())
+				.append('\n');
+
+			if (inHudson && "<init>".equals(call.getMethodName())) {
+				System.err.println("FYI: getInstance called from: \n" + stackPrint);
+				break;
+			}
+
+		}
+		*/
+
         return theInstance;
     }
 
