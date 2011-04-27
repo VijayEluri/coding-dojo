@@ -627,13 +627,16 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 			throws IOException, InterruptedException, ReactorException {
     	// As hudson is starting, grant this process full control
         try {
-        	return new Hudson(root, context, null);
+        	Hudson instance = new Hudson(root, context, null);
+        	instance.postCreateNotifyListeners();
+            return instance;
         } finally {
             SecurityContextHolder.clearContext();
         }
 	}
 
     /**
+     * Important: set {@link #getInstance()} and call {@link #postCreateNotifyListeners()} when done.
      * @param pluginManager
      *      If non-null, use existing plugin manager.  create a new one.
      */
@@ -714,8 +717,12 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
             LOGGER.log(Level.WARNING, "Faild to broadcast over UDP",e);
         }
         dnsMultiCast = new DNSMultiCast(this);
+    }
 
-        updateComputerList(); // -> getInstance
+    /** Call after constructor finishes and {@link #getInstance()} is set to notify listeners. */
+	private void postCreateNotifyListeners() throws IOException,
+			InterruptedException {
+		updateComputerList(); // -> getInstance
 
         {// master is online now
             Computer c = toComputer(); // -> getInstance
@@ -726,7 +733,7 @@ public final class Hudson extends Node implements ItemGroup<TopLevelItem>, Stapl
 
         for (ItemListener l : ItemListener.all()) // -> getInstance
             l.onLoaded();
-    }
+	}
 
     /**
      * Executes a reactor.
