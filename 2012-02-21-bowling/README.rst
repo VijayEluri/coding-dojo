@@ -12,7 +12,9 @@ domain for this kata is the game of bowling.
 
 Project layout
 ==============
+
 ::
+
     .
     ├── autotest.py          # Auto test runner
     ├── buster.js            # Buster.JS config file
